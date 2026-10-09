@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>한국가스공사 경영학 복원 통합 분석</title>
+<meta name="description" content="한국가스공사 전공필기 경영학 복원 6종 231문항을 경영·회계·재무로 분류하고 출제 비중과 빈출 테마를 집계한 정리 사이트.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://ayun-jeong.github.io/kogas-business-exam/">
+<meta property="og:title" content="한국가스공사 경영학 복원 통합 분석">
+<meta property="og:description" content="복원 6종 231문항 → 경영 57.6% · 회계 21.2% · 재무 21.2%. 빈출 테마 53개 랭킹과 영역별 출제 포인트.">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav><div class="wrap">
+  <span class="brand">KOGAS 경영학 복원</span>
+  <a href="#ratio">출제비중</a>
+  <a href="#rank">빈출랭킹</a>
+  <a href="#mgmt">경영</a>
+  <a href="#acct">회계</a>
+  <a href="#fin">재무</a>
+  <a href="#db">전체문항</a>
+  <a href="#plan">학습전략</a>
+</div></nav>
+
+<header><div class="wrap">
+  <div class="eyebrow">한국가스공사 · 전공필기 경영학</div>
+  <h1>복원 6종 231문항<br>통합 분석</h1>
+  <p class="lead">흩어져 있던 복원 목록 여섯 개(정리표 1종 + 복원 글 5종)를 한 테이블로 합치고,
+  모든 문항을 <b>경영 · 회계 · 재무</b> 세 축과 15개 세부영역으로 재분류했습니다.
+  같은 개념이 몇 번 반복됐는지까지 세어 중요도를 매겼습니다.</p>
+  <div class="stats" id="stats"></div>
+</div></header>
+
+<!-- ─────────── 출제 비중 ─────────── -->
+<section id="ratio"><div class="wrap">
+  <div class="shead">
+    <h2>1. 출제 비중</h2>
+    <p>결론부터: <b>경영학 본체가 거의 6할</b>이고, 회계와 재무가 정확히 반반으로 나머지를 나눠 갖습니다.
+    "경영학 시험인데 회계·재무가 4할"이라는 점이 이 시험의 성격을 결정합니다.</p>
+  </div>
+  <div class="split3" id="donuts"></div>
+  <div class="bars">
+    <div style="font-size:13px;font-weight:700;color:var(--tx3);margin-bottom:10px">세부영역 15개 — 전체 231문항 대비</div>
+    <div id="subbars"></div>
+  </div>
+  <p class="note">※ 복원은 "기억난 문제"만 모인 자료라 회차별 편차가 있습니다. 실제로 복원④·복원③은 재무·회계 비중이 높고,
+  복원①·복원②는 경영 비중이 높습니다. 아래 비중은 <b>여섯 회차를 평균 낸 값</b>으로 보는 게 맞습니다.</p>
+</div></section>
+
+<!-- ─────────── 빈출 랭킹 ─────────── -->
+<section id="rank"><div class="wrap">
+  <div class="shead">
+    <h2>2. 빈출 테마 랭킹</h2>
+    <p>여러 복원본에 <b>반복해서 등장한 개념</b>을 묶어 센 결과입니다. 등급은
+    <span class="grade g-S">S</span> 5회 이상 ·
+    <span class="grade g-A">A</span> 3~4회 ·
+    <span class="grade g-B">B</span> 2회.
+    S·A등급 33개 테마가 전체의 절반 가까이를 설명합니다.</p>
+  </div>
+  <div class="ctrl"><div class="chips" id="rankchips"></div></div>
+  <div class="tblwrap"><table>
+    <thead><tr><th>등급</th><th>테마</th><th>분류</th><th>세부영역</th><th>횟수</th><th>등장 복원본</th></tr></thead>
+    <tbody id="rankbody"></tbody>
+  </table></div>
+  <p class="note">※ 1회만 등장한 57개 문항은 랭킹에서 빠져 있습니다. 전체 목록은 <a href="#db">6번 전체 문항 DB</a>에서 확인하세요.</p>
+</div></section>
+
+<!-- ─────────── 경영 ─────────── -->
+<section id="mgmt"><div class="wrap">
+  <div class="shead">
+    <h2>3. 경영 <span class="pill p-경영">133문항 · 57.6%</span></h2>
+    <p>가장 큰 덩어리. 그런데 "경영원론"이 주력일 거라는 예상과 달리, 실제 최대 출제처는
+    <b>인사관리와 조직행동</b>입니다. 둘을 합치면 경영 영역의 40% 이상이고 전체 시험의 4분의 1입니다.</p>
+  </div>
+  <div class="topics">
+    <div class="topic ac-경영">
+      <div class="th"><h4>인사관리</h4><span class="cn">31문항 · 13.4%</span></div>
+      <ul class="kw">
+        <li><b>성과배분제</b> — 스캔론(판매가치 기준) · 럭커(부가가치 기준) · 임프로쉐어(표준시간 기준). 5회 출제, 셋을 구분하는 문제가 반복됩니다.</li>
+        <li><b>노사관계·숍 제도</b> — 유니온 숍 / 에이전시 숍 / 클로즈드 숍 / 오픈 숍 / 체크오프, 이익분쟁 쟁의 가능 여부.</li>
+        <li><b>직무분석</b> — 직무기술서(직무 자체) vs 직무명세서(사람 요건), 작업기록법·중요사건법.</li>
+        <li><b>직무특성이론</b> — 기술다양성·과업정체성·과업중요성·자율성·피드백. 개별 요소명을 그대로 묻습니다.</li>
+        <li><b>교육훈련</b> — OJT / Off-JT 장단점과 정의.</li>
+        <li><b>간접보상</b> — 카페테리아식 복리후생의 장점, 간접보상의 종류(4회).</li>
+        <li><b>인사고과·선발</b> — 강제할당법·대조표 중 상대평가 구분, 타당도, 결합방식, BEI 면접.</li>
+      </ul>
+      <div class="trap"><b>함정</b> — 강제할당법은 <b>상대평가</b>, 대조표(체크리스트)는 절대평가. 둘을 섞은 선지가 나옵니다.</div>
+    </div>
+
+    <div class="topic ac-경영">
+      <div class="th"><h4>조직행동</h4><span class="cn">22문항 · 9.5%</span></div>
+      <ul class="kw">
+        <li><b>리더십 이론</b> — 피들러(LPC·상황호의성), 허시–블랜차드 SLT, 서번트 리더십, 관계지향 vs 과업지향. 5회.</li>
+        <li><b>동기부여 이론</b> — 허즈버그 2요인, ERG, 브룸 기대이론(기대성·수단성·유의성), 아담스 공정성, 강화이론의 소거. 6회.</li>
+        <li><b>지각오류</b> — 대조효과 · 초두효과 · 자존적 편견.</li>
+        <li><b>집단의사결정</b> — 브레인스토밍 규칙, 악마의 옹호자.</li>
+        <li>조하리의 창(블라인드 영역 극복), 의사소통 네트워크, 통제위치(내재론·외재론), Z이론, 권력.</li>
+      </ul>
+      <div class="trap"><b>포인트</b> — 리더십·동기부여는 <b>이름 ↔ 핵심변수 매칭</b>으로만 나옵니다. 깊이보다 커버리지가 이깁니다.</div>
+    </div>
+
+    <div class="topic ac-경영">
+      <div class="th"><h4>전략경영</h4><span class="cn">23문항 · 10.0%</span></div>
+      <ul class="kw">
+        <li><b>앤소프 제품–시장 매트릭스</b> — 전 테마 중 공동 2위(6회). 시장침투·시장개발·제품개발·다각화를 그대로 묻습니다.</li>
+        <li><b>포터 가치사슬</b> — 본원적활동(내부물류·운영·외부물류·마케팅/판매·서비스) vs 지원활동(기업인프라·인적자원관리·기술개발·조달). 4회.</li>
+        <li><b>BCG 매트릭스</b> — 특히 Question Mark 셀의 전략. 4회.</li>
+        <li><b>5 Force</b> — 경쟁강도가 높아지는 상황 판별.</li>
+        <li>SWOT(외부요인 구분), BSC 학습·성장 관점, SCP 패러다임, 마일즈&스노우, 혁신전략(점진적·로엔드 파괴).</li>
+      </ul>
+      <div class="trap"><b>함정</b> — 가치사슬에서 <b>A/S(서비스)는 본원적 활동</b>입니다. 지원활동으로 유도하는 선지가 두 회차에 걸쳐 나왔습니다.</div>
+    </div>
+
+    <div class="topic ac-경영">
+      <div class="th"><h4>경영원론·기업형태</h4><span class="cn">21문항 · 9.1%</span></div>
+      <ul class="kw">
+        <li><b>경영사</b> — 테일러(과학적 관리법·고임금 저노무비), 포드 시스템, 페욜, 호손실험. 테일러↔페욜 비교형 포함. 6회.</li>
+        <li><b>기업형태</b> — 주식회사(정관·특징), 합명·합자회사, 협동조합, 수탁경영층·황금낙하산. 6회.</li>
+        <li><b>기업결합</b> — 카르텔 · 트러스트 · 콘체른 · 콩글로머릿. 3회.</li>
+        <li>카츠의 경영자 역량(최고경영자 = 개념적 능력), 노나카 지식경영.</li>
+      </ul>
+      <div class="trap"><b>포인트</b> — 민츠버그는 경영원론(경영자 역할)과 조직론(5가지 조직구조) 양쪽에서 나옵니다. 합산 6회로 최상위권.</div>
+    </div>
+
+    <div class="topic ac-경영">
+      <div class="th"><h4>조직론</h4><span class="cn">12문항 · 5.2%</span></div>
+      <ul class="kw">
+        <li><b>민츠버그</b> — 다섯 가지 조직구조, 구성요소(전략부문·핵심운영층·중간관리층·기술전문가·지원스탭).</li>
+        <li><b>페로우 기술유형</b> — 일상적 · 비일상적 · 장인 · 공학적 기술. 4회, "아닌 것 고르기"로 자주.</li>
+        <li><b>조직구조</b> — 사업부 조직, 매트릭스·팀제, 수직적·수평적 분화.</li>
+        <li>베버 관료제(비정의성), 공식조직.</li>
+      </ul>
+      <div class="trap"><b>함정</b> — 페로우 4유형에 없는 이름(예: "기능적 기술")을 끼워 넣는 유형이 반복됩니다.</div>
+    </div>
+
+    <div class="topic ac-경영">
+      <div class="th"><h4>마케팅</h4><span class="cn">15문항 · 6.5%</span></div>
+      <ul class="kw">
+        <li><b>베버의 법칙·식역</b> — 초기 자극이 클수록 변화량도 커야 지각됨. 절대적 식역도 함께. 4회.</li>
+        <li><b>컨조인트 분석</b> — 2회.</li>
+        <li>제품수명주기 성숙기 특징, MOT, 물적유통, 가격(유보가격→준거가격·목표이익 가격설정), 플래그십 마케팅, 터보마케팅, 제품지향적 마케팅의 한계.</li>
+      </ul>
+      <div class="trap"><b>함정</b> — 베버의 법칙이 선지에 "<b>지각경계법칙</b>"이라는 낯선 이름으로 섞여 나온 사례가 있습니다.</div>
+    </div>
+
+    <div class="topic ac-경영">
+      <div class="th"><h4>생산운영·경영과학</h4><span class="cn">9문항 · 3.9%</span></div>
+      <ul class="kw">
+        <li><b>수요예측</b> — 시계열분석 · 지수평활법 · 델파이 기법. 3회.</li>
+        <li><b>EOQ·재고관리</b> — 경제적주문량 모형, 투빈 시스템. 2회.</li>
+        <li><b>완전정보의 기대가치(EVPI)</b> 계산 — 2회, 계산문제로 나옵니다.</li>
+        <li>설비배치(제품별·공정별·위치고정형), 생산계획.</li>
+      </ul>
+      <div class="trap"><b>포인트</b> — 비중은 작지만 <b>EOQ와 EVPI는 공식만 알면 바로 득점</b>입니다. 가성비 최상.</div>
+    </div>
+  </div>
+</div></section>
+
+<!-- ─────────── 회계 ─────────── -->
+<section id="acct"><div class="wrap">
+  <div class="shead">
+    <h2>4. 회계 <span class="pill p-회계">49문항 · 21.2%</span></h2>
+    <p>재무회계 30 : 원가·관리회계 19로 재무회계가 더 많지만, <b>반복 출제되는 핵심 테마는 원가·관리회계 쪽이 선명</b>합니다.
+    재무회계는 넓고 얕게, 원가는 좁고 확실하게 나옵니다.</p>
+  </div>
+  <div class="topics">
+    <div class="topic ac-회계">
+      <div class="th"><h4>재무회계</h4><span class="cn">30문항 · 13.0%</span></div>
+      <ul class="kw">
+        <li><b>리스</b> — 3회(말문제 포함). 최근 복원본에서 집중적으로 나왔습니다.</li>
+        <li><b>재무정보 질적특성</b> — 목적적합성·표현충실성, 중립성·일관성·객관성 구분. 2회.</li>
+        <li><b>종업원급여</b> — 확정급여부채 계산, 재측정요소 계산. 2회, 둘 다 계산.</li>
+        <li><b>적격자산·차입원가 자본화</b> — 금융자산은 적격자산이 될 수 없음. 2회.</li>
+        <li><b>금융자산·금융부채</b> 분류, <b>수익인식</b>(선적지 인도기준, 사용권은 기간에 따라 인식).</li>
+        <li><b>현금흐름표</b> — 투자활동·재무활동 구분. <b>감가상각</b> — 연수합계법 계산.</li>
+        <li>재고(후입선출), 충당부채, 공정가치, 계속기업 가정, 회계정책, 당기 법인세비용 계산, 자본조정, 분개·차변대변, 유동/비유동 구분.</li>
+      </ul>
+      <div class="trap"><b>함정</b> — 적격자산 문제는 "금융자산도 적격자산이 될 수 있다"는 선지로 나옵니다. <b>불가</b>가 정답.</div>
+    </div>
+
+    <div class="topic ac-회계">
+      <div class="th"><h4>원가·관리회계</h4><span class="cn">19문항 · 8.2%</span></div>
+      <ul class="kw">
+        <li><b>전부·변동·초변동원가계산</b> — 4회. 생산량·판매량 변화에 따른 영업이익 증감 비교가 핵심 유형입니다.</li>
+        <li><b>CVP·공헌이익</b> — 손익분기점 판매량, 단위당 변동원가, 공헌이익·공헌비율 계산. 3회.</li>
+        <li><b>원가요소</b> — 기초원가(직접재료+직접노무) vs 가공원가(직접노무+제조간접), 제조간접원가. 3회.</li>
+        <li><b>품질원가</b> — 예방·평가(통제원가) vs 내부실패·외부실패(실패원가). 2회.</li>
+        <li><b>원가행태·조업도</b> — 2회. 고정비·변동비 구분.</li>
+        <li>활동기준원가계산(ABC), 종합원가 평균법 완성품환산량, 최대대체가격, 목표이익 가격결정.</li>
+      </ul>
+      <div class="trap"><b>핵심 공식</b> — 생산량&gt;판매량이면 전부원가 영업이익 &gt; 변동원가 영업이익. 초변동원가가 가장 작습니다. 이 한 줄이 4문항을 커버합니다.</div>
+    </div>
+  </div>
+</div></section>
+
+<!-- ─────────── 재무 ─────────── -->
+<section id="fin"><div class="wrap">
+  <div class="shead">
+    <h2>5. 재무 <span class="pill p-재무">49문항 · 21.2%</span></h2>
+    <p>세 축 중 <b>계산문제 밀도가 압도적으로 높은</b> 영역입니다. 말문제 비중이 낮은 대신 공식을 정확히 알면 확정 득점이 되고,
+    모르면 통째로 날아갑니다. 전체의 5분의 1이므로 버릴 수 없습니다.</p>
+  </div>
+  <div class="topics">
+    <div class="topic ac-재무">
+      <div class="th"><h4>주식·채권 가치평가</h4><span class="cn">12문항 · 5.2%</span></div>
+      <ul class="kw">
+        <li><b>주식가치평가</b> — 배당평가모형 P₀ = D₁/(k−g), PER, PBR, 주가 계산. 5회로 재무 내 최다.</li>
+        <li><b>채권</b> — 듀레이션, 순수할인채, 이자율 변동에 따른 채권가격 변동 계산. 3회.</li>
+        <li><b>EVA</b> — 식 자체와 개념. 2회.</li>
+        <li>토빈의 Q, ROE(듀폰 분해).</li>
+      </ul>
+      <div class="trap"><b>실제 출제</b> — Ke 14%, g 8%, P₀ 40,000원을 주고 배당률·배당금·배당 후 주가를 모두 묻는 종합형이 나왔습니다. D₁ = 40,000×(0.14−0.08) = 2,400원.</div>
+    </div>
+
+    <div class="topic ac-재무">
+      <div class="th"><h4>포트폴리오·CAPM</h4><span class="cn">10문항 · 4.3%</span></div>
+      <ul class="kw">
+        <li><b>CAPM·베타·기대수익률</b> — E(Rᵢ) = R𝑓 + βᵢ[E(Rₘ) − R𝑓]. 6회로 재무 전체 공동 1위.</li>
+        <li><b>포트폴리오·자본시장선(CML)</b> — CML의 특징, 포트폴리오 기대수익률. 3회.</li>
+        <li>체계적 위험 개념, 포트폴리오 기대수익률·베타로 개별자산 수익률 역산.</li>
+      </ul>
+      <div class="trap"><b>포인트</b> — 포트폴리오 베타는 개별 베타의 가중평균. 이걸 역산시키는 문제가 실제로 나왔습니다.</div>
+    </div>
+
+    <div class="topic ac-재무">
+      <div class="th"><h4>투자안 평가</h4><span class="cn">8문항 · 3.5%</span></div>
+      <ul class="kw">
+        <li><b>NPV·IRR·PI</b> — 전 테마 통틀어 <b>최다 출제(8회)</b>. 개념·계산·비교가 모두 나옵니다.</li>
+        <li>가치가산 원리는 <b>NPV법만 성립</b>, IRR법은 복수해가 존재할 수 있음.</li>
+        <li><b>피셔의 수익률</b> — 두 투자안의 NPV가 같아지는 할인율. 2회.</li>
+      </ul>
+      <div class="trap"><b>최우선 테마</b> — 231문항 중 단일 테마 1위입니다. NPV·IRR 비교표(재투자수익률 가정, 가치가산성, 복수해)를 통째로 외워야 합니다.</div>
+    </div>
+
+    <div class="topic ac-재무">
+      <div class="th"><h4>자본비용·자본구조</h4><span class="cn">7문항 · 3.0%</span></div>
+      <ul class="kw">
+        <li><b>MM이론</b> — MM(1958) 무관련 명제와 MM 수정이론(1963, 법인세 고려), 부채사용효과, 무부채기업. 3회.</li>
+        <li><b>WACC 계산</b> — 2회.</li>
+        <li>타인자본비용 vs 자기자본비용 비교, 자본조달 순위(자본 고르기).</li>
+      </ul>
+      <div class="trap"><b>포인트</b> — MM 1963은 "법인세 있으면 부채 많을수록 기업가치↑". 1958(무관련)과 헷갈리게 섞어 출제됩니다.</div>
+    </div>
+
+    <div class="topic ac-재무">
+      <div class="th"><h4>재무목표·레버리지·기타</h4><span class="cn">8문항 · 3.5%</span></div>
+      <ul class="kw">
+        <li><b>재무관리의 목표</b> — 주주 부의 극대화 = 자기자본가치 극대화 = NPV 극대화. 3회, 거의 매 회차.</li>
+        <li><b>영업레버리지도(DOL)</b> — 고정비가 클수록 DOL이 커짐. 2회.</li>
+        <li>리스의 경제성 평가, 현금흐름 할증·위험조정, 금융시장의 시간 배분 기능.</li>
+      </ul>
+      <div class="trap"><b>함정</b> — "고정비가 크면 DOL이 작아진다"는 선지가 실제로 출제됐습니다. <b>커집니다.</b> 또 재무관리 목표를 "이익 극대화"로 유도하는 선지도 단골.</div>
+    </div>
+
+    <div class="topic ac-재무">
+      <div class="th"><h4>파생상품·위험관리</h4><span class="cn">4문항 · 1.7%</span></div>
+      <ul class="kw">
+        <li><b>옵션</b> — 콜·풋옵션 행사 시 수익 계산, 코스피지수 콜옵션. 2회.</li>
+        <li>VaR 모형, 위험회피 수단.</li>
+      </ul>
+      <div class="trap"><b>포인트</b> — 비중은 작지만 옵션 손익 계산은 그림 하나로 끝납니다. 콜 = max(S−X,0), 풋 = max(X−S,0).</div>
+    </div>
+  </div>
+</div></section>
+
+<!-- ─────────── 전체 문항 DB ─────────── -->
+<section id="db"><div class="wrap">
+  <div class="shead">
+    <h2>6. 전체 문항 DB</h2>
+    <p>복원 6종에서 수집한 231문항 전부입니다. 검색·분류 필터로 바로 찾아보세요.</p>
+  </div>
+  <div class="ctrl">
+    <input type="search" id="q" placeholder="키워드 검색 (예: 가치사슬, NPV, 리스…)" autocomplete="off">
+    <select id="src"><option value="">복원본 전체</option></select>
+    <select id="sub"><option value="">세부영역 전체</option></select>
+  </div>
+  <div class="ctrl"><div class="chips" id="catchips"></div></div>
+  <div class="cnt-line" id="dbcount"></div>
+  <div class="tblwrap"><table>
+    <thead><tr><th>출처</th><th>문항</th><th>분류</th><th>세부영역</th><th>빈출테마</th></tr></thead>
+    <tbody id="dbbody"></tbody>
+  </table></div>
+  <div class="twocol" id="srclegend"></div>
+</div></section>
+
+<!-- ─────────── 학습 전략 ─────────── -->
+<section id="plan"><div class="wrap">
+  <div class="shead">
+    <h2>7. 학습 전략</h2>
+    <p>비중과 반복 횟수를 함께 보면 공부 순서가 자동으로 정해집니다.</p>
+  </div>
+  <div class="steps">
+    <div class="step"><div class="no">1</div><div>
+      <h4>S등급 10개 테마부터 — 전체의 약 25%</h4>
+      <p>NPV·IRR·PI(8회), 경영사, 앤소프, 기업형태, 민츠버그, 동기부여, CAPM·베타(각 6회), 성과배분·리더십·주식가치평가(각 5회).
+      이 열 개만으로 59문항, <b>전체의 4분의 1</b>이 커버됩니다. 여기서 틀리면 만회가 어렵습니다.</p>
+    </div></div>
+    <div class="step"><div class="no">2</div><div>
+      <h4>인사 + 조직을 한 덩어리로 — 경영 최대 출제처</h4>
+      <p>인사관리 31 + 조직행동 22 + 조직론 12 = 65문항으로 <b>전체의 28%</b>입니다. 전략경영(23)보다 세 배 가까이 많습니다.
+      성과배분제·숍제도·직무분석·직무특성·리더십·동기부여·지각오류 — 이 일곱 묶음이 핵심입니다.</p>
+      <p>출제 방식이 대부분 <b>이름 ↔ 정의 매칭</b>이라, 깊이 파기보다 빠짐없이 훑는 쪽이 점수가 높습니다.</p>
+    </div></div>
+    <div class="step"><div class="no">3</div><div>
+      <h4>재무는 계산 공식 12개로 승부</h4>
+      <p>재무 49문항 중 상당수가 계산입니다. 공식을 모르면 찍기, 알면 확정입니다. 아래 계산 유형표를 그대로 체크리스트로 쓰세요.</p>
+    </div></div>
+    <div class="step"><div class="no">4</div><div>
+      <h4>회계는 "전부·변동·초변동"과 "CVP"를 먼저</h4>
+      <p>재무회계 30문항은 범위가 넓어 투자 대비 회수가 낮습니다. 반면 원가·관리회계는
+      전부/변동/초변동 비교(4회) + CVP·공헌이익(3회) + 원가요소(3회) = 10문항이 <b>세 덩어리에 몰려</b> 있습니다.
+      재무회계는 리스·질적특성·적격자산·종업원급여 네 개만 먼저 끊고 나머지는 후순위로 미뤄도 됩니다.</p>
+    </div></div>
+    <div class="step"><div class="no">5</div><div>
+      <h4>마지막 날엔 함정 선지만</h4>
+      <p>복원에서 확인된 <b>오답 유도 패턴</b>이 아래에 정리돼 있습니다. 정답을 몰라서가 아니라 선지에 속아서 틀리는 문항들입니다.</p>
+    </div></div>
+  </div>
+
+  <div class="twocol">
+    <div class="listcard">
+      <h4>꼭 외울 계산 유형 16</h4>
+      <ol>
+        <li><b>NPV / IRR / PI</b> — 비교표 + 피셔수익률</li>
+        <li><b>CAPM</b> E(Rᵢ)=R𝑓+βᵢ[E(Rₘ)−R𝑓], 포트폴리오 베타 역산</li>
+        <li><b>배당평가모형</b> P₀=D₁/(k−g), 배당률·배당 후 주가</li>
+        <li><b>PER · PBR</b></li>
+        <li><b>WACC</b></li>
+        <li><b>채권가격</b> — 이자율 변동, 듀레이션, 순수할인채</li>
+        <li><b>옵션 손익</b> — 콜 max(S−X,0) / 풋 max(X−S,0)</li>
+        <li><b>EVA</b> = 세후영업이익 − 투하자본×WACC</li>
+        <li><b>BEP·공헌이익</b> — 손익분기 판매량, 단위당 변동원가, 공헌비율</li>
+        <li><b>전부·변동·초변동</b> 영업이익 차이</li>
+        <li><b>완성품환산량</b>(평균법)</li>
+        <li><b>감가상각</b> 연수합계법</li>
+        <li><b>당기 법인세비용</b></li>
+        <li><b>확정급여부채·재측정요소</b></li>
+        <li><b>EOQ</b> 경제적주문량</li>
+        <li><b>완전정보의 기대가치(EVPI)</b></li>
+      </ol>
+    </div>
+    <div class="listcard">
+      <h4>복원으로 확인된 함정 선지</h4>
+      <ul>
+        <li>포터 가치사슬에서 <b>A/S(서비스)는 본원적 활동</b> — 지원활동으로 유도</li>
+        <li>베버의 법칙이 선지에 <b>"지각경계법칙"</b>이라는 이름으로 등장</li>
+        <li>CVP에서 <b>고정비가 크면 DOL은 커진다</b> — "작아진다"로 출제</li>
+        <li><b>금융자산은 적격자산이 될 수 없다</b> — 가능하다고 유도</li>
+        <li>가치가산 원리는 <b>NPV법만</b> 성립, IRR은 복수해 존재 가능</li>
+        <li><b>강제할당법 = 상대평가</b>, 대조표 = 절대평가</li>
+        <li>재무관리 목표는 <b>주주 부(자기자본가치) 극대화</b> — "이익 극대화"로 유도</li>
+        <li>페로우 4유형(일상·비일상·장인·공학)에 <b>없는 이름</b>을 끼워 넣기</li>
+        <li>SWOT에서 <b>외부요인이 아닌 항목</b> 고르기</li>
+        <li>협동조합 특징 <b>아닌 것</b> / 브레인스토밍에 <b>적절치 않은 것</b></li>
+        <li>MM 1958(무관련) vs <b>MM 1963(법인세 고려)</b> 혼동 유도</li>
+      </ul>
+    </div>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  <p><b>자료 출처</b> — 수험생 복원 6종(정리표 1 + 복원 글 5)을 그대로 수합·분류했습니다.
+  복원은 응시자가 기억해 낸 내용이므로 실제 출제 문항·배점과 다를 수 있고, 회차가 섞여 있어
+  여기의 비중은 <b>단일 회차의 배점이 아니라 여러 회차의 평균적 경향</b>입니다.</p>
+  <p style="margin-top:8px">분류·중요도 판정은 231개 문항의 반복 등장 횟수에 근거한 집계입니다. 공식 자료가 아닙니다.</p>
+</div></footer>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

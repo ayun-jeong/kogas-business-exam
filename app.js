@@ -123,7 +123,7 @@ function renderRank(d){
     ? `S·A등급 <b>${sa.length}개 테마가 전체 ${d.T}문항 중 ${saN}문항(${d.pct(saN)}%)</b>을 설명합니다.` : '';
   const once = d.T - d.kw.reduce((a,r) => a+r.n, 0);
   $('#rankNote').innerHTML = once > 0
-    ? `※ 1회만 등장한 ${once}개 문항은 랭킹에서 빠져 있습니다. 전체 목록은 <a href="#db">4번 전체 문항 DB</a>에서 확인하세요.` : '';
+    ? `※ 1회만 등장한 ${once}개 문항은 랭킹에서 빠져 있습니다. 전체 목록은 <a href="#db">1번 전체 문항 검색</a>에서 확인하세요.` : '';
 
   const chips = ['전체', ...CATS.filter(c => d.cat[c]), 'S등급만'];
   if (!chips.includes(rankFilter)) rankFilter = '';

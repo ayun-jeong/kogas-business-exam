@@ -2,7 +2,7 @@
 
 복원 자료를 기업별로 수합해 **경영 · 회계 · 재무**로 분류하고, 출제 비중과 빈출 테마를 집계해 보여 주는 정적 사이트.
 
-🔗 https://ayun-jeong.github.io/kogas-business-exam/
+🔗 https://ayun-jeong.github.io/public-exam-analysis/
 
 ## 구조
 

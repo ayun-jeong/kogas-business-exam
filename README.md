@@ -1,0 +1,57 @@
+# 공기업 전공필기 경영학 복원 분석
+
+복원 자료를 기업별로 수합해 **경영 · 회계 · 재무**로 분류하고, 출제 비중과 빈출 테마를 집계해 보여 주는 정적 사이트.
+
+🔗 https://ayun-jeong.github.io/kogas-business-exam/
+
+## 구조
+
+```
+index.html              기업 중립 셸 (섹션 틀만 있고 내용은 비어 있음)
+styles.css
+app.js                  탭 전환 + 모든 집계·렌더링
+companies/
+  kogas.js              한국가스공사 — 복원 6종 231문항
+  expressway.js         한국도로공사 — 빈 틀
+```
+
+**숫자는 어디에도 하드코딩돼 있지 않습니다.** 비중·빈출 랭킹·등급·문항 수는 전부 `items` 배열에서 런타임에 계산됩니다.
+
+## 기업 추가하는 법
+
+1. `companies/expressway.js`를 복사해 `companies/<id>.js`를 만든다.
+2. `index.html`의 `<script src="companies/kogas.js">` 아래에 한 줄 추가한다.
+
+```html
+<script src="companies/<id>.js"></script>
+```
+
+끝. 탭은 자동으로 생깁니다. `?c=<id>` 로 특정 기업 탭에 바로 들어갈 수도 있습니다.
+
+## 기업 파일 스키마
+
+```js
+registerCompany({
+  id:'kogas', name:'한국가스공사', tab:'한국가스공사',
+  status:'ready',                 // 'pending' 이면 빈 상태 화면
+  summary:'복원 6종 · 231문항',    // 히어로 제목 윗줄
+  lead:'…',                       // 히어로 설명 (HTML 허용)
+  ratioNote:'…',                  // 비중 섹션 아래 주석
+  footnote:'…',                   // 푸터 출처 안내
+
+  sources:{ A:{label:'복원표', desc:'…'}, B:{label:'복원①', desc:'…'} },
+
+  // 필수. 이 배열 하나가 비중·랭킹·DB를 전부 만든다.
+  // [출처키, 번호, 문항, '경영'|'회계'|'재무', 세부영역, 빈출키워드('' 가능)]
+  items:[ ['A',1,'테일러의 과학적 관리법','경영','경영원론·기업형태','경영사(테일러·포드·페욜·호손)'] ],
+
+  // 선택. 비우면 해당 섹션이 통째로 숨겨진다.
+  analysis:[ { cat:'경영', lead:'…', topics:[ {name:'인사관리', points:['…'], trap:'…'} ] } ],
+  plan:{ steps:[{title:'…', body:['…']}], formulas:['…'], traps:['…'] }
+});
+```
+
+### 규칙 두 가지
+
+- `analysis[].topics[].name` 은 **`items`의 세부영역 값과 글자가 똑같아야** 합니다. 그래야 카드의 문항 수가 자동으로 붙습니다.
+- 빈출 키워드는 **2회 이상** 등장해야 랭킹에 올라갑니다. 등급은 5회↑ `S`, 3~4회 `A`, 2회 `B`.

@@ -221,6 +221,31 @@ function renderPlan(d){
     card('복원으로 확인된 함정 선지', p.traps, false);
 }
 
+/* ───────── 스티키 바 높이 실측 ─────────
+   상단 메뉴와 기업 탭 두 층이 겹쳐 있어서, 높이를 하드코딩하면
+   폰트·화면 폭에 따라 1~2px씩 어긋나 틈이 보이고 앵커가 바 뒤로 숨는다.
+   실제 높이를 재서 CSS 변수로 넘긴다. */
+(function stickySync(){
+  const nav = document.querySelector('nav'), bar = document.querySelector('.tabbar');
+  if (!nav || !bar) return;
+  const root = document.documentElement;
+  const sync = () => {
+    const nh = Math.round(nav.getBoundingClientRect().height);
+    const bh = Math.round(bar.getBoundingClientRect().height);
+    if (!nh) return;                       // 숨겨진 상태면 건너뜀
+    root.style.setProperty('--nav-h', nh + 'px');
+    root.style.setProperty('--sticky-h', (nh + bh) + 'px');
+  };
+  sync();
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(sync);
+    ro.observe(nav); ro.observe(bar);
+  } else {
+    window.addEventListener('resize', sync);
+  }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(sync);
+})();
+
 /* ───────── 이벤트 ───────── */
 $('#rankchips').addEventListener('click', e => {
   const b = e.target.closest('.chip'); if (!b) return;

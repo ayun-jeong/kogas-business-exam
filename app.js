@@ -1,8 +1,12 @@
 (function(){
 'use strict';
 const $ = s => document.querySelector(s);
-const CATS = ['경영','회계','재무'];
-const COLOR = { '경영':'var(--c-mgmt)', '회계':'var(--c-acct)', '재무':'var(--c-fin)' };
+/* 과목 축은 기업마다 다르다(가스공사=경영·회계·재무, 도로공사=경영·회계·경제).
+   company.cats 가 있으면 그 순서를, 없으면 items 등장 순서를 따른다. */
+const catsOf = c => (c.cats && c.cats.length) ? c.cats.slice()
+  : [...new Set((c.items||[]).map(r => r[3]))];
+const cc = i => 'c' + (i % 4);                    // 색 슬롯 (CSS --c-c0~c3)
+const cvar = i => `var(--c-${cc(i)})`;
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const tally = (arr, fn) => arr.reduce((a,r) => { const k = fn(r); if (k) a[k]=(a[k]||0)+1; return a; }, {});
 const sorted = o => Object.entries(o).sort((a,b) => b[1]-a[1] || a[0].localeCompare(b[0],'ko'));
@@ -24,8 +28,10 @@ function derive(c){
       return { key:k, n:n, cat:hits[0][3], sub:hits[0][4], grade:grade(n),
                srcs:[...new Set(hits.map(r => r[0]))].sort() };
     });
+  const cats = catsOf(c).filter(x => items.some(r => r[3]===x));
+  const catIndex = {}; cats.forEach((x,i) => catIndex[x] = i);
   return (c._d = {
-    items, T, subcat, kw,
+    items, T, subcat, kw, cats, catIndex,
     cat: tally(items, r => r[3]),
     sub: tally(items, r => r[4]),
     pct: n => T ? (n/T*100).toFixed(1) : '0.0'
@@ -90,10 +96,10 @@ function renderStats(d){
 }
 
 function renderDonuts(d){
-  $('#donuts').innerHTML = CATS.filter(c => d.cat[c]).map(c => {
-    const n = d.cat[c], p = +d.pct(n), C = COLOR[c], R = 32, circ = 2*Math.PI*R;
+  $('#donuts').innerHTML = d.cats.map(c => {
+    const n = d.cat[c], p = +d.pct(n), C = cvar(d.catIndex[c]), R = 32, circ = 2*Math.PI*R;
     const subs = sorted(tally(d.items.filter(r => r[3]===c), r => r[4]));
-    return `<div class="dcard ac-${c}">
+    return `<div class="dcard ac-${cc(d.catIndex[c])}">
       <div class="top">
         <svg width="82" height="82" viewBox="0 0 82 82" aria-hidden="true">
           <circle cx="41" cy="41" r="${R}" fill="none" stroke="var(--bg3)" stroke-width="11"/>
@@ -109,10 +115,12 @@ function renderDonuts(d){
 }
 
 function renderBars(d){
+  $('#ratioLead').innerHTML = `수합한 전 문항을 <b>${d.cats.join(' · ')}</b> ` +
+    `${['','한','두','세','네'][d.cats.length] || d.cats.length} 축과 세부영역 ${Object.keys(d.sub).length}개로 나눈 결과입니다.`;
   const max = Math.max(...Object.values(d.sub));
   $('#subbars').innerHTML = sorted(d.sub).map(([s,n]) => `<div class="bar">
     <div class="nm">${esc(s)}</div>
-    <div class="tr"><div class="fl" style="width:${(n/max*100).toFixed(1)}%;background:${COLOR[d.subcat[s]]}"></div></div>
+    <div class="tr"><div class="fl" style="width:${(n/max*100).toFixed(1)}%;background:${cvar(d.catIndex[d.subcat[s]])}"></div></div>
     <div class="vl">${n}· ${d.pct(n)}%</div></div>`).join('');
   $('#ratioNote').innerHTML = cur.ratioNote ? '※ ' + cur.ratioNote : '';
 }
@@ -125,7 +133,7 @@ function renderRank(d){
   $('#rankNote').innerHTML = once > 0
     ? `※ 1회만 등장한 ${once}개 문항은 랭킹에서 빠져 있습니다. 전체 목록은 <a href="#db">1번 전체 문항 검색</a>에서 확인하세요.` : '';
 
-  const chips = ['전체', ...CATS.filter(c => d.cat[c]), 'S등급만'];
+  const chips = ['전체', ...d.cats, 'S등급만'];
   if (!chips.includes(rankFilter)) rankFilter = '';
   $('#rankchips').innerHTML = chips.map(c =>
     `<button class="chip" data-r="${c==='전체'?'':c}" aria-pressed="${(c==='전체'&&!rankFilter)||c===rankFilter}">${c}</button>`).join('');
@@ -136,7 +144,7 @@ function drawRank(d){
   $('#rankbody').innerHTML = rows.map(r => `<tr>
     <td><span class="grade g-${r.grade}">${r.grade}</span></td>
     <td style="font-weight:650">${esc(r.key)}</td>
-    <td><span class="pill p-${r.cat}">${r.cat}</span></td>
+    <td><span class="pill p-${cc(d.catIndex[r.cat])}">${esc(r.cat)}</span></td>
     <td class="dim">${esc(r.sub)}</td>
     <td class="num">${r.n}회</td>
     <td><div class="srcs">${r.srcs.map(s => srcTag(s)).join('')}</div></td>
@@ -151,15 +159,15 @@ function renderAnalysis(d){
   const groups = cur.analysis || [];
   document.getElementById('analysis').hidden = !groups.length;
   $('#analysisWrap').innerHTML = groups.map(g => {
-    const n = d.cat[g.cat] || 0;
+    const n = d.cat[g.cat] || 0, ci = cc(d.catIndex[g.cat] || 0);
     return `<div class="agroup">
       <div class="ahead">
-        <h3>${esc(g.cat)}<span class="pill p-${g.cat}">${n}문항 · ${d.pct(n)}%</span></h3>
+        <h3>${esc(g.cat)}<span class="pill p-${ci}">${n}문항 · ${d.pct(n)}%</span></h3>
         <p>${g.lead || ''}</p>
       </div>
       <div class="topics">${(g.topics||[]).map(t => {
         const tn = d.sub[t.name] || 0;
-        return `<div class="topic ac-${g.cat}">
+        return `<div class="topic ac-${ci}">
           <div class="th"><h4>${esc(t.name)}</h4><span class="cn">${tn}문항 · ${d.pct(tn)}%</span></div>
           <ul class="kw">${(t.points||[]).map(p => `<li>${p}</li>`).join('')}</ul>
           ${t.trap ? `<div class="trap">${t.trap}</div>` : ''}
@@ -170,7 +178,7 @@ function renderAnalysis(d){
 }
 
 function renderDB(d){
-  const cats = CATS.filter(c => d.cat[c]);
+  const cats = d.cats;
   if (dbCat && !cats.includes(dbCat)) dbCat = '';
   $('#catchips').innerHTML = ['전체', ...cats].map(c =>
     `<button class="chip" data-c="${c==='전체'?'':c}" aria-pressed="${(c==='전체'&&!dbCat)||c===dbCat}">${c} ${c==='전체'?d.T:d.cat[c]}</button>`).join('');
@@ -201,7 +209,7 @@ function drawDB(d){
   $('#dbbody').innerHTML = rows.map(r => `<tr>
     <td>${srcTag(r[0], '·'+r[1])}</td>
     <td style="min-width:240px">${esc(r[2])}</td>
-    <td><span class="pill p-${r[3]}">${r[3]}</span></td>
+    <td><span class="pill p-${cc(d.catIndex[r[3]])}">${esc(r[3])}</span></td>
     <td class="dim" style="white-space:nowrap">${esc(r[4])}</td>
     <td class="dim" style="font-size:12.5px">${r[5] ? esc(r[5]) : '—'}</td>
   </tr>`).join('') || `<tr><td colspan="5" class="dim">검색 결과가 없습니다.</td></tr>`;

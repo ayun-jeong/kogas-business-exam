@@ -53,7 +53,7 @@ $('#tabs').innerHTML = LIST.map(c => {
 $('#tabs').addEventListener('click', e => {
   const b = e.target.closest('.tab'); if (!b || b.dataset.id===cur.id) return;
   cur = LIST.find(c => c.id===b.dataset.id);
-  rankFilter = ''; dbCat = '';   // 기업이 바뀌면 필터는 초기화
+  rankFilter = ''; dbCat = ''; vFilter = '';   // 기업이 바뀌면 필터는 초기화
   $('#tabs').querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', t===b));
   history.replaceState(null,'', '?c='+cur.id + location.hash);
   render();
@@ -82,7 +82,7 @@ function render(){
   }
   $('#main').hidden = false; $('#empty').hidden = true;
 
-  renderStats(d); renderDonuts(d); renderBars(d); renderRank(d); renderAnalysis(d); renderDB(d); renderPlan(d);
+  renderStats(d); renderDonuts(d); renderBars(d); renderRank(d); renderAnalysis(d); renderDB(d); renderCourse(d); renderPlan(d);
 }
 
 function renderStats(d){
@@ -229,6 +229,103 @@ function renderPlan(d){
     card('복원으로 확인된 함정 선지', p.traps, false);
 }
 
+/* ───────── 강의 판별 ─────────
+   강의 목록은 과목(subject) 단위라 등록된 모든 기관에 자동 적용된다.
+   매칭: 문항의 (제목 + 세부영역 + 빈출키워드) 에 match 문자열이 하나라도 들어가면 1건.
+         exclude 는 '제목' 에만 적용 — 기관마다 빈출키워드를 묶어 써서(예 '사채·복합금융상품')
+         이웃 강의 문항이 딸려 오는 것을 막기 위함.
+   판정은 보수적: 다른 기관에서 나온 주제는 '스킵 후보' 가 아니라 '후순위' 까지만 내린다. */
+const COURSE_LIST = window.COURSES || [];
+const VERDICTS = ['최우선','필수','권장','조건부','후순위','스킵 후보'];
+const VCLASS = { '최우선':'v0', '필수':'v1', '권장':'v2', '조건부':'v3', '후순위':'v4', '스킵 후보':'v5' };
+
+function lecHits(course, lec, company){
+  return (company.items||[]).filter(r => {
+    if (r[3] !== course.subject) return false;
+    if ((lec.exclude||[]).some(x => r[2].includes(x))) return false;
+    const hay = r[2] + ' ' + r[4] + ' ' + (r[5] || '');
+    return (lec.match||[]).some(m => hay.includes(m));
+  });
+}
+function verdictOf(mine, others, common){
+  if (mine >= 6) return '최우선';
+  if (mine >= 3) return '필수';
+  if (mine >= 1) return '권장';
+  if (common)    return '조건부';
+  return others > 0 ? '후순위' : '스킵 후보';
+}
+const hhmm = m => (m >= 60 ? Math.floor(m/60) + '시간 ' : '') + (m % 60) + '분';
+
+let courseId = '', vFilter = '';
+
+function renderCourse(d){
+  const mine = COURSE_LIST.filter(c => d.cats.includes(c.subject));
+  const sec = document.getElementById('course');
+  sec.hidden = !mine.length;
+  if (!mine.length) return;
+  if (!mine.some(c => c.id === courseId)) courseId = mine[0].id;
+  const course = mine.find(c => c.id === courseId);
+
+  $('#coursechips').innerHTML = mine.map(c =>
+    `<button class="chip" data-course="${esc(c.id)}" aria-pressed="${c.id===courseId}">
+      <span class="pill p-${cc(d.catIndex[c.subject])}">${esc(c.subject)}</span> ${esc(c.title)}
+      ${c.kind ? `<span class="tabn">${esc(c.kind)}</span>` : ''}</button>`).join('');
+
+  const others = LIST.filter(x => x.id !== cur.id && (x.items||[]).some(r => r[3] === course.subject));
+  const rows = course.lectures.map(l => {
+    const h = lecHits(course, l, cur);
+    const o = others.map(x => ({ name: x.tab || x.name, n: lecHits(course, l, x).length }));
+    const oMax = o.reduce((a,b) => Math.max(a, b.n), 0);
+    return { l, h, o, v: verdictOf(h.length, oMax, l.common) };
+  });
+
+  const tot = rows.reduce((a,r) => a + r.l.min, 0);
+  const byV = v => rows.filter(r => r.v === v);
+  const minOf = a => a.reduce((s,r) => s + r.l.min, 0);
+  const keep = rows.filter(r => ['최우선','필수','권장','조건부'].includes(r.v));
+  const drop = rows.filter(r => ['후순위','스킵 후보'].includes(r.v));
+
+  $('#coursestats').innerHTML = [
+    [rows.length + '강', '총 ' + hhmm(tot)],
+    [byV('최우선').length + byV('필수').length + '강', '필수 이상 · ' + hhmm(minOf(byV('최우선')) + minOf(byV('필수')))],
+    [byV('권장').length + byV('조건부').length + '강', '권장·조건부 · ' + hhmm(minOf(byV('권장')) + minOf(byV('조건부')))],
+    [byV('후순위').length + '강', '후순위 · ' + hhmm(minOf(byV('후순위')))],
+    [byV('스킵 후보').length + '강', '스킵 후보 · ' + hhmm(minOf(byV('스킵 후보')))]
+  ].map(([v,l]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join('');
+
+  $('#coursesave').innerHTML = drop.length
+    ? `<b>${cur.name}</b> 기준으로 <b>${drop.length}강 ${hhmm(minOf(drop))}</b>을 덜어낼 수 있습니다 ` +
+      `(전체 ${hhmm(tot)}의 ${Math.round(minOf(drop)/tot*100)}%). 남는 분량은 <b>${keep.length}강 ${hhmm(minOf(keep))}</b>.`
+    : '덜어낼 강의가 없습니다.';
+
+  const counts = {}; rows.forEach(r => counts[r.v] = (counts[r.v]||0) + 1);
+  const avail = ['전체', ...VERDICTS.filter(v => counts[v])];
+  if (vFilter && !counts[vFilter]) vFilter = '';
+  $('#verdictchips').innerHTML = avail.map(v =>
+    `<button class="chip" data-v="${v==='전체'?'':v}" aria-pressed="${(v==='전체'&&!vFilter)||v===vFilter}">
+      ${v}${v==='전체'?` ${rows.length}`:` ${counts[v]}`}</button>`).join('');
+
+  const shown = rows.filter(r => !vFilter || r.v === vFilter);
+  $('#coursebody').innerHTML = shown.map(({l,h,o,v}) => `<tr>
+    <td class="num">${l.no}강</td>
+    <td style="min-width:190px">${esc(l.title)}${l.note ? `<div class="lecnote">${esc(l.note)}</div>` : ''}</td>
+    <td class="num dim">${l.min}분</td>
+    <td><span class="grade g-${VCLASS[v]}">${v}</span></td>
+    <td style="min-width:230px">
+      ${h.length ? `<b>${h.length}문항</b><div class="lecev">${h.slice(0,3).map(r => esc(r[2])).join(' · ')}${h.length>3?` 외 ${h.length-3}건`:''}</div>`
+                 : '<span class="dim">0문항</span>'}</td>
+    <td>${o.length ? `<div class="srcs">${o.map(x => `<span class="src">${esc(x.name)} ${x.n}</span>`).join('')}</div>` : '<span class="dim">—</span>'}</td>
+  </tr>`).join('') || `<tr><td colspan="6" class="dim">해당 없음</td></tr>`;
+
+  const hidden = COURSE_LIST.length - mine.length;
+  $('#coursenote').innerHTML =
+    `※ 판정 기준 — <b>최우선</b> 6문항 이상 · <b>필수</b> 3~5 · <b>권장</b> 1~2 · ` +
+    `<b>조건부</b> 0회지만 공기업 단골 주제 · <b>후순위</b> 0회지만 다른 기관에서 출제 · <b>스킵 후보</b> 모든 기관에서 0회.` +
+    (course.note ? `<br>※ ${course.note}` : '') +
+    (hidden ? `<br>※ 이 기관에 없는 과목의 강의 ${hidden}개는 숨겼습니다.` : '') +
+    `<br>※ 복원은 기억에 의존한 자료라 <b>0회가 "출제되지 않는다"는 뜻은 아닙니다.</b> 시간 배분 우선순위로만 쓰세요.`;
+}
+
 /* ───────── 스티키 바 높이 실측 ─────────
    상단 메뉴와 기업 탭 두 층이 겹쳐 있어서, 높이를 하드코딩하면
    폰트·화면 폭에 따라 1~2px씩 어긋나 틈이 보이고 앵커가 바 뒤로 숨는다.
@@ -268,6 +365,14 @@ $('#catchips').addEventListener('click', e => {
   drawDB(derive(cur));
 });
 ['#q','#src','#sub'].forEach(s => $(s).addEventListener('input', () => drawDB(derive(cur))));
+$('#coursechips').addEventListener('click', e => {
+  const b = e.target.closest('.chip'); if (!b) return;
+  courseId = b.dataset.course; vFilter = ''; renderCourse(derive(cur));
+});
+$('#verdictchips').addEventListener('click', e => {
+  const b = e.target.closest('.chip'); if (!b) return;
+  vFilter = b.dataset.v; renderCourse(derive(cur));
+});
 
 render();
 })();

@@ -53,7 +53,7 @@ $('#tabs').innerHTML = LIST.map(c => {
 $('#tabs').addEventListener('click', e => {
   const b = e.target.closest('.tab'); if (!b || b.dataset.id===cur.id) return;
   cur = LIST.find(c => c.id===b.dataset.id);
-  rankFilter = ''; dbCat = ''; vFilter = '';   // 기업이 바뀌면 필터는 초기화
+  rankFilter = ''; dbCat = ''; vFilter = ''; kFilter = '';   // 기업이 바뀌면 필터는 초기화
   $('#tabs').querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', t===b));
   history.replaceState(null,'', '?c='+cur.id + location.hash);
   render();
@@ -247,16 +247,18 @@ function lecHits(course, lec, company){
     return (lec.match||[]).some(m => hay.includes(m));
   });
 }
-function verdictOf(mine, others, common){
+function verdictOf(mine, others, common, peers){
   if (mine >= 6) return '최우선';
   if (mine >= 3) return '필수';
   if (mine >= 1) return '권장';
   if (common)    return '조건부';
-  return others > 0 ? '후순위' : '스킵 후보';
+  if (others > 0) return '후순위';
+  // 그 과목을 치는 기관이 하나뿐이면 '전 기관 0회'가 근거로 약하다 → 후순위까지만.
+  return peers >= 2 ? '스킵 후보' : '후순위';
 }
 const hhmm = m => (m >= 60 ? Math.floor(m/60) + '시간 ' : '') + (m % 60) + '분';
 
-let courseId = '', vFilter = '';
+let courseId = '', vFilter = '', kFilter = '';
 
 function renderCourse(d){
   const mine = COURSE_LIST.filter(c => d.cats.includes(c.subject));
@@ -271,12 +273,13 @@ function renderCourse(d){
       <span class="pill p-${cc(d.catIndex[c.subject])}">${esc(c.subject)}</span> ${esc(c.title)}
       ${c.kind ? `<span class="tabn">${esc(c.kind)}</span>` : ''}</button>`).join('');
 
-  const others = LIST.filter(x => x.id !== cur.id && (x.items||[]).some(r => r[3] === course.subject));
+  const peers = LIST.filter(x => (x.items||[]).some(r => r[3] === course.subject));
+  const others = peers.filter(x => x.id !== cur.id);
   const rows = course.lectures.map(l => {
     const h = lecHits(course, l, cur);
     const o = others.map(x => ({ name: x.tab || x.name, n: lecHits(course, l, x).length }));
     const oMax = o.reduce((a,b) => Math.max(a, b.n), 0);
-    return { l, h, o, v: verdictOf(h.length, oMax, l.common) };
+    return { l, h, o, v: verdictOf(h.length, oMax, l.common, peers.length) };
   });
 
   const tot = rows.reduce((a,r) => a + r.l.min, 0);
@@ -293,10 +296,12 @@ function renderCourse(d){
     [byV('스킵 후보').length + '강', '스킵 후보 · ' + hhmm(minOf(byV('스킵 후보')))]
   ].map(([v,l]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join('');
 
+  const solo = peers.length < 2
+    ? ` <b>${esc(course.subject)}</b> 과목을 치는 기관이 ${cur.name} 하나뿐이라 한 기관의 복원만으로 판정했습니다 — 더 보수적으로 보세요.` : '';
   $('#coursesave').innerHTML = drop.length
     ? `<b>${cur.name}</b> 기준으로 <b>${drop.length}강 ${hhmm(minOf(drop))}</b>을 덜어낼 수 있습니다 ` +
-      `(전체 ${hhmm(tot)}의 ${Math.round(minOf(drop)/tot*100)}%). 남는 분량은 <b>${keep.length}강 ${hhmm(minOf(keep))}</b>.`
-    : '덜어낼 강의가 없습니다.';
+      `(전체 ${hhmm(tot)}의 ${Math.round(minOf(drop)/tot*100)}%). 남는 분량은 <b>${keep.length}강 ${hhmm(minOf(keep))}</b>.` + solo
+    : '덜어낼 강의가 없습니다.' + solo;
 
   const counts = {}; rows.forEach(r => counts[r.v] = (counts[r.v]||0) + 1);
   const avail = ['전체', ...VERDICTS.filter(v => counts[v])];
@@ -305,7 +310,15 @@ function renderCourse(d){
     `<button class="chip" data-v="${v==='전체'?'':v}" aria-pressed="${(v==='전체'&&!vFilter)||v===vFilter}">
       ${v}${v==='전체'?` ${rows.length}`:` ${counts[v]}`}</button>`).join('');
 
-  const shown = rows.filter(r => !vFilter || r.v === vFilter);
+  const kinds = [...new Set(rows.map(r => r.l.kind).filter(Boolean))];
+  if (kFilter && !kinds.includes(kFilter)) kFilter = '';
+  $('#kindchips').innerHTML = kinds.length > 1
+    ? ['전체', ...kinds].map(k => {
+        const g = k==='전체' ? rows : rows.filter(r => r.l.kind===k);
+        return `<button class="chip" data-k="${k==='전체'?'':k}" aria-pressed="${(k==='전체'&&!kFilter)||k===kFilter}">
+          ${k==='전체'?'이론+문제':k} ${g.length}강 · ${hhmm(minOf(g))}</button>`;
+      }).join('') : '';
+  const shown = rows.filter(r => (!vFilter || r.v === vFilter) && (!kFilter || r.l.kind === kFilter));
   $('#coursebody').innerHTML = shown.map(({l,h,o,v}) => `<tr>
     <td class="num">${l.no}강</td>
     <td style="min-width:190px">${esc(l.title)}${l.note ? `<div class="lecnote">${esc(l.note)}</div>` : ''}</td>
@@ -367,11 +380,15 @@ $('#catchips').addEventListener('click', e => {
 ['#q','#src','#sub'].forEach(s => $(s).addEventListener('input', () => drawDB(derive(cur))));
 $('#coursechips').addEventListener('click', e => {
   const b = e.target.closest('.chip'); if (!b) return;
-  courseId = b.dataset.course; vFilter = ''; renderCourse(derive(cur));
+  courseId = b.dataset.course; vFilter = ''; kFilter = ''; renderCourse(derive(cur));
 });
 $('#verdictchips').addEventListener('click', e => {
   const b = e.target.closest('.chip'); if (!b) return;
   vFilter = b.dataset.v; renderCourse(derive(cur));
+});
+$('#kindchips').addEventListener('click', e => {
+  const b = e.target.closest('.chip'); if (!b) return;
+  kFilter = b.dataset.k; renderCourse(derive(cur));
 });
 
 render();

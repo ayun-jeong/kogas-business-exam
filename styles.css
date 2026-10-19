@@ -206,3 +206,5 @@ section,header{scroll-margin-top:calc(var(--sticky-h) + 14px)}
 .grade{white-space:nowrap}
 #coursebody .srcs .src{white-space:nowrap}
 #coursebody td:last-child{white-space:nowrap}
+.g-v6{background:#5a7fa8}
+@media (prefers-color-scheme:dark){ .g-v6{background:#6f93bd} }

@@ -53,7 +53,7 @@ $('#tabs').innerHTML = LIST.map(c => {
 $('#tabs').addEventListener('click', e => {
   const b = e.target.closest('.tab'); if (!b || b.dataset.id===cur.id) return;
   cur = LIST.find(c => c.id===b.dataset.id);
-  rankFilter = ''; dbCat = ''; vFilter = ''; kFilter = '';   // 기업이 바뀌면 필터는 초기화
+  rankFilter = ''; dbCat = ''; vFilter = ''; aFilter = '';   // 기업이 바뀌면 필터는 초기화
   $('#tabs').querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', t===b));
   history.replaceState(null,'', '?c='+cur.id + location.hash);
   render();
@@ -236,8 +236,8 @@ function renderPlan(d){
          이웃 강의 문항이 딸려 오는 것을 막기 위함.
    판정은 보수적: 다른 기관에서 나온 주제는 '스킵 후보' 가 아니라 '후순위' 까지만 내린다. */
 const COURSE_LIST = window.COURSES || [];
-const VERDICTS = ['최우선','필수','권장','조건부','후순위','스킵 후보'];
-const VCLASS = { '최우선':'v0', '필수':'v1', '권장':'v2', '조건부':'v3', '후순위':'v4', '스킵 후보':'v5' };
+const VERDICTS = ['최우선','필수','권장','조건부','모의고사','후순위','스킵 후보'];
+const VCLASS = { '최우선':'v0', '필수':'v1', '권장':'v2', '조건부':'v3', '모의고사':'v6', '후순위':'v4', '스킵 후보':'v5' };
 
 function lecHits(course, lec, company){
   return (company.items||[]).filter(r => {
@@ -247,7 +247,8 @@ function lecHits(course, lec, company){
     return (lec.match||[]).some(m => hay.includes(m));
   });
 }
-function verdictOf(mine, others, common, peers){
+function verdictOf(mine, others, common, peers, mock){
+  if (mock) return '모의고사';          // 전범위 모의고사는 주제 매칭 대상이 아님
   if (mine >= 6) return '최우선';
   if (mine >= 3) return '필수';
   if (mine >= 1) return '권장';
@@ -258,7 +259,7 @@ function verdictOf(mine, others, common, peers){
 }
 const hhmm = m => (m >= 60 ? Math.floor(m/60) + '시간 ' : '') + (m % 60) + '분';
 
-let courseId = '', vFilter = '', kFilter = '';
+let courseId = '', vFilter = '', aFilter = '';
 
 function renderCourse(d){
   const mine = COURSE_LIST.filter(c => d.cats.includes(c.subject));
@@ -269,9 +270,8 @@ function renderCourse(d){
   const course = mine.find(c => c.id === courseId);
 
   $('#coursechips').innerHTML = mine.map(c =>
-    `<button class="chip" data-course="${esc(c.id)}" aria-pressed="${c.id===courseId}">
-      <span class="pill p-${cc(d.catIndex[c.subject])}">${esc(c.subject)}</span> ${esc(c.title)}
-      ${c.kind ? `<span class="tabn">${esc(c.kind)}</span>` : ''}</button>`).join('');
+    `<button class="chip" data-course="${esc(c.id)}" aria-pressed="${c.id===courseId}" title="${esc(c.title)}">
+      <span class="pill p-${cc(d.catIndex[c.subject])}">${esc(c.subject)}</span> ${esc(c.short || c.kind || '')}</button>`).join('');
 
   const peers = LIST.filter(x => (x.items||[]).some(r => r[3] === course.subject));
   const others = peers.filter(x => x.id !== cur.id);
@@ -279,19 +279,20 @@ function renderCourse(d){
     const h = lecHits(course, l, cur);
     const o = others.map(x => ({ name: x.tab || x.name, n: lecHits(course, l, x).length }));
     const oMax = o.reduce((a,b) => Math.max(a, b.n), 0);
-    return { l, h, o, v: verdictOf(h.length, oMax, l.common, peers.length) };
+    return { l, h, o, v: verdictOf(h.length, oMax, l.common, peers.length, l.mock) };
   });
 
   const tot = rows.reduce((a,r) => a + r.l.min, 0);
   const byV = v => rows.filter(r => r.v === v);
   const minOf = a => a.reduce((s,r) => s + r.l.min, 0);
-  const keep = rows.filter(r => ['최우선','필수','권장','조건부'].includes(r.v));
+  const keep = rows.filter(r => ['최우선','필수','권장','조건부','모의고사'].includes(r.v));
   const drop = rows.filter(r => ['후순위','스킵 후보'].includes(r.v));
 
   $('#coursestats').innerHTML = [
     [rows.length + '강', '총 ' + hhmm(tot)],
     [byV('최우선').length + byV('필수').length + '강', '필수 이상 · ' + hhmm(minOf(byV('최우선')) + minOf(byV('필수')))],
-    [byV('권장').length + byV('조건부').length + '강', '권장·조건부 · ' + hhmm(minOf(byV('권장')) + minOf(byV('조건부')))],
+    [byV('권장').length + byV('조건부').length + byV('모의고사').length + '강',
+     '권장·조건부·모의 · ' + hhmm(minOf(byV('권장')) + minOf(byV('조건부')) + minOf(byV('모의고사')))],
     [byV('후순위').length + '강', '후순위 · ' + hhmm(minOf(byV('후순위')))],
     [byV('스킵 후보').length + '강', '스킵 후보 · ' + hhmm(minOf(byV('스킵 후보')))]
   ].map(([v,l]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join('');
@@ -310,15 +311,15 @@ function renderCourse(d){
     `<button class="chip" data-v="${v==='전체'?'':v}" aria-pressed="${(v==='전체'&&!vFilter)||v===vFilter}">
       ${v}${v==='전체'?` ${rows.length}`:` ${counts[v]}`}</button>`).join('');
 
-  const kinds = [...new Set(rows.map(r => r.l.kind).filter(Boolean))];
-  if (kFilter && !kinds.includes(kFilter)) kFilter = '';
-  $('#kindchips').innerHTML = kinds.length > 1
-    ? ['전체', ...kinds].map(k => {
-        const g = k==='전체' ? rows : rows.filter(r => r.l.kind===k);
-        return `<button class="chip" data-k="${k==='전체'?'':k}" aria-pressed="${(k==='전체'&&!kFilter)||k===kFilter}">
-          ${k==='전체'?'이론+문제':k} ${g.length}강 · ${hhmm(minOf(g))}</button>`;
+  const areas = [...new Set(rows.map(r => r.l.area).filter(Boolean))];
+  if (aFilter && !areas.includes(aFilter)) aFilter = '';
+  $('#areachips').innerHTML = areas.length > 1
+    ? ['전체', ...areas].map(a => {
+        const g = a==='전체' ? rows : rows.filter(r => r.l.area===a);
+        return `<button class="chip" data-a="${a==='전체'?'':a}" aria-pressed="${(a==='전체'&&!aFilter)||a===aFilter}">
+          ${a} ${g.length}강 · ${hhmm(minOf(g))}</button>`;
       }).join('') : '';
-  const shown = rows.filter(r => (!vFilter || r.v === vFilter) && (!kFilter || r.l.kind === kFilter));
+  const shown = rows.filter(r => (!vFilter || r.v === vFilter) && (!aFilter || r.l.area === aFilter));
   $('#coursebody').innerHTML = shown.map(({l,h,o,v}) => `<tr>
     <td class="num">${l.no}강</td>
     <td style="min-width:190px">${esc(l.title)}${l.note ? `<div class="lecnote">${esc(l.note)}</div>` : ''}</td>
@@ -332,8 +333,10 @@ function renderCourse(d){
 
   const hidden = COURSE_LIST.length - mine.length;
   $('#coursenote').innerHTML =
+    `※ 선택한 강좌 — <b>${esc(course.title)}</b> (${rows.length}강 ${hhmm(tot)})<br>` +
     `※ 판정 기준 — <b>최우선</b> 6문항 이상 · <b>필수</b> 3~5 · <b>권장</b> 1~2 · ` +
-    `<b>조건부</b> 0회지만 공기업 단골 주제 · <b>후순위</b> 0회지만 다른 기관에서 출제 · <b>스킵 후보</b> 모든 기관에서 0회.` +
+    `<b>조건부</b> 0회지만 공기업 단골 주제 · <b>모의고사</b> 주제 매칭 대상 아님 · ` +
+    `<b>후순위</b> 0회지만 다른 기관에서 출제 · <b>스킵 후보</b> 모든 기관에서 0회.` +
     (course.note ? `<br>※ ${course.note}` : '') +
     (hidden ? `<br>※ 이 기관에 없는 과목의 강의 ${hidden}개는 숨겼습니다.` : '') +
     `<br>※ 복원은 기억에 의존한 자료라 <b>0회가 "출제되지 않는다"는 뜻은 아닙니다.</b> 시간 배분 우선순위로만 쓰세요.`;
@@ -380,15 +383,15 @@ $('#catchips').addEventListener('click', e => {
 ['#q','#src','#sub'].forEach(s => $(s).addEventListener('input', () => drawDB(derive(cur))));
 $('#coursechips').addEventListener('click', e => {
   const b = e.target.closest('.chip'); if (!b) return;
-  courseId = b.dataset.course; vFilter = ''; kFilter = ''; renderCourse(derive(cur));
+  courseId = b.dataset.course; vFilter = ''; aFilter = ''; renderCourse(derive(cur));
 });
 $('#verdictchips').addEventListener('click', e => {
   const b = e.target.closest('.chip'); if (!b) return;
   vFilter = b.dataset.v; renderCourse(derive(cur));
 });
-$('#kindchips').addEventListener('click', e => {
+$('#areachips').addEventListener('click', e => {
   const b = e.target.closest('.chip'); if (!b) return;
-  kFilter = b.dataset.k; renderCourse(derive(cur));
+  aFilter = b.dataset.a; renderCourse(derive(cur));
 });
 
 render();

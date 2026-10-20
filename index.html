@@ -138,6 +138,22 @@ window.COURSES=[];window.registerCourse=function(c){window.COURSES.push(c)};</sc
   <p style="margin-top:8px">분류·중요도 판정은 수합 문항의 반복 등장 횟수에 근거한 집계입니다. 공식 자료가 아닙니다.</p>
 </div></footer>
 
+<!-- 어느 섹션에서든 따라다니는 문항 검색 -->
+<button id="qfab" class="qfab" aria-expanded="false" aria-controls="qpanel">
+  <span class="qfab-ico" aria-hidden="true">⌕</span><span class="qfab-txt">문항 검색</span><kbd>/</kbd>
+</button>
+<div id="qpanel" class="qpanel" hidden role="dialog" aria-modal="true" aria-label="문항 검색">
+  <div class="qbox">
+    <div class="qhead">
+      <span class="qhead-ico" aria-hidden="true">⌕</span>
+      <input type="search" id="qq" placeholder="개념을 입력하세요 — 예: 리스, 솔로우, EOQ, 가치사슬" autocomplete="off" spellcheck="false">
+      <button id="qclose" class="qclose" aria-label="닫기">Esc</button>
+    </div>
+    <div class="qsum" id="qsum"></div>
+    <div class="qres" id="qres"></div>
+  </div>
+</div>
+
 <script src="companies/kogas.js"></script>
 <script src="companies/expressway.js"></script>
 <script src="courses/accounting-intermediate.js"></script>

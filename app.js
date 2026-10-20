@@ -342,6 +342,102 @@ function renderCourse(d){
     `<br>※ 복원은 기억에 의존한 자료라 <b>0회가 "출제되지 않는다"는 뜻은 아닙니다.</b> 시간 배분 우선순위로만 쓰세요.`;
 }
 
+/* ───────── 어디서나 따라다니는 문항 검색 ─────────
+   섹션 1의 DB 검색은 "선택한 기관의 전체 목록 훑기"용이고,
+   이 패널은 스크롤 위치와 무관하게 "이 개념이 어디서 나왔나"를 전 기관에서 즉시 확인하는 용도다. */
+const qfab = $('#qfab'), qpanel = $('#qpanel'), qq = $('#qq');
+
+function qHit(co, term){
+  return (co.items||[]).filter(r => (r[2] + ' ' + r[4] + ' ' + (r[5]||'')).toLowerCase().includes(term));
+}
+function qMark(text, term){
+  const i = text.toLowerCase().indexOf(term);
+  if (i < 0) return esc(text);
+  return esc(text.slice(0,i)) + '<mark>' + esc(text.slice(i, i+term.length)) + '</mark>' + esc(text.slice(i+term.length));
+}
+function qRender(){
+  const term = qq.value.trim().toLowerCase();
+  if (!term){
+    const d = derive(cur);
+    const tops = d.kw.filter(r => r.grade === 'S').slice(0, 6);
+    $('#qsum').innerHTML = '';
+    $('#qres').innerHTML = `<div class="qempty">찾는 개념이 복원에 나왔는지 바로 확인합니다.<br>
+      <b>${esc(cur.name)}</b> 기준 빈출 테마로 시작해 보세요.
+      <div style="display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-top:14px">
+        ${tops.map(t => `<button class="qchip" data-seed="${esc(t.key.replace(/[(·].*$/,'').trim())}">${esc(t.key)}</button>`).join('')}
+      </div></div>`;
+    return;
+  }
+  // 현재 기관을 먼저, 나머지 기관을 뒤에
+  const order = [cur, ...LIST.filter(c => c.id !== cur.id)];
+  const groups = order.map(co => ({ co, rows: qHit(co, term) }));
+  const total = groups.reduce((a,g) => a + g.rows.length, 0);
+
+  $('#qsum').innerHTML = groups.map(g => {
+    const on = g.rows.length > 0;
+    return `<span class="qchip" style="cursor:default;${on?'':'opacity:.5'}">
+      ${esc(g.co.tab || g.co.name)} <b>${g.rows.length}</b></span>`;
+  }).join('') + (total ? `<span style="margin-left:auto;color:var(--tx3)">총 ${total}건</span>` : '');
+
+  if (!total){
+    $('#qres').innerHTML = `<div class="qempty">복원 어디에도 <b>"${esc(qq.value.trim())}"</b>이(가) 없습니다.<br>
+      기억에 의존한 자료라 <b>출제되지 않는다는 뜻은 아닙니다.</b></div>`;
+    return;
+  }
+  $('#qres').innerHTML = groups.filter(g => g.rows.length).map(g => {
+    const d = derive(g.co);
+    return `<div class="qgrp">${esc(g.co.tab || g.co.name)} · ${g.rows.length}건</div>` +
+      g.rows.map(r => `<div class="qitem">
+        <div class="qt">${qMark(r[2], term)}</div>
+        <div><span class="pill p-${cc(d.catIndex[r[3]])}">${esc(r[3])}</span></div>
+        <div class="qm">
+          <span class="src">${esc(((g.co.sources||{})[r[0]]||{}).label || r[0])}·${r[1]}</span>
+          <span>${esc(r[4])}</span>
+          ${r[5] ? `<span>· ${esc(r[5])}</span>` : ''}
+        </div></div>`).join('');
+  }).join('');
+}
+let dbInView = false;
+function syncFab(){ qfab.hidden = dbInView || !qpanel.hidden; }
+
+function qOpen(seed){
+  qpanel.hidden = false;
+  qfab.setAttribute('aria-expanded','true');
+  syncFab();
+  document.body.style.overflow = 'hidden';
+  if (seed != null) qq.value = seed;
+  qRender();
+  qq.focus(); qq.select();
+}
+function qClose(){
+  qpanel.hidden = true;
+  qfab.setAttribute('aria-expanded','false');
+  document.body.style.overflow = '';
+  syncFab();
+}
+qfab.addEventListener('click', () => qOpen());
+$('#qclose').addEventListener('click', qClose);
+qpanel.addEventListener('mousedown', e => { if (e.target === qpanel) qClose(); });
+qq.addEventListener('input', qRender);
+$('#qres').addEventListener('click', e => {
+  const b = e.target.closest('[data-seed]'); if (!b) return;
+  qq.value = b.dataset.seed; qRender(); qq.focus();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !qpanel.hidden) { qClose(); return; }
+  if ((e.key === 'k' || e.key === 'K') && (e.metaKey || e.ctrlKey)) { e.preventDefault(); qOpen(); return; }
+  if (e.key === '/' && qpanel.hidden) {
+    const t = e.target;
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+    e.preventDefault(); qOpen();
+  }
+});
+// 섹션 1(전체 문항 검색)이 화면에 있을 땐 중복이라 버튼을 숨긴다
+if (window.IntersectionObserver){
+  new IntersectionObserver(([en]) => { dbInView = en.isIntersecting; syncFab(); },
+    { rootMargin: '-20% 0px -20% 0px' }).observe(document.getElementById('db'));
+}
+
 /* ───────── 스티키 바 높이 실측 ─────────
    상단 메뉴와 기업 탭 두 층이 겹쳐 있어서, 높이를 하드코딩하면
    폰트·화면 폭에 따라 1~2px씩 어긋나 틈이 보이고 앵커가 바 뒤로 숨는다.

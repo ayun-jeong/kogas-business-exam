@@ -346,6 +346,22 @@ function renderCourse(d){
    섹션 1의 DB 검색은 "선택한 기관의 전체 목록 훑기"용이고,
    이 패널은 스크롤 위치와 무관하게 "이 개념이 어디서 나왔나"를 전 기관에서 즉시 확인하는 용도다. */
 const qfab = $('#qfab'), qpanel = $('#qpanel'), qq = $('#qq');
+// 과목 필터. 기관마다 과목 축이 달라(재무 / 경제) 전 기관 과목의 합집합을 칩으로 쓴다.
+let qCat = '';
+function qCats(){
+  const seen = [];
+  [cur, ...LIST.filter(c => c.id !== cur.id)].forEach(co => (co.cats||[]).forEach(k => { if (!seen.includes(k)) seen.push(k); }));
+  return seen;
+}
+function qDrawCats(hits){
+  const cats = qCats();
+  if (qCat && !cats.includes(qCat)) qCat = '';
+  const n = k => hits ? hits.filter(r => !k || r[3] === k).length : null;
+  $('#qcats').innerHTML = ['', ...cats].map(k => {
+    const c = n(k);
+    return `<button class="chip" data-qc="${esc(k)}" aria-pressed="${qCat===k}"${c===0&&qCat!==k?' style="opacity:.45"':''}>${k ? esc(k) : '전체 과목'}${c==null ? '' : ' ' + c}</button>`;
+  }).join('');
+}
 
 function qHit(co, term){
   return (co.items||[]).filter(r => (r[2] + ' ' + r[4] + ' ' + (r[5]||'')).toLowerCase().includes(term));
@@ -358,6 +374,7 @@ function qMark(text, term){
 function qRender(){
   const term = qq.value.trim().toLowerCase();
   if (!term){
+    qDrawCats(null);
     const d = derive(cur);
     const tops = d.kw.filter(r => r.grade === 'S').slice(0, 6);
     $('#qsum').innerHTML = '';
@@ -370,7 +387,9 @@ function qRender(){
   }
   // 현재 기관을 먼저, 나머지 기관을 뒤에
   const order = [cur, ...LIST.filter(c => c.id !== cur.id)];
-  const groups = order.map(co => ({ co, rows: qHit(co, term) }));
+  const all = order.map(co => ({ co, rows: qHit(co, term) }));
+  qDrawCats(all.flatMap(g => g.rows));
+  const groups = all.map(g => ({ co: g.co, rows: qCat ? g.rows.filter(r => r[3] === qCat) : g.rows }));
   const total = groups.reduce((a,g) => a + g.rows.length, 0);
 
   $('#qsum').innerHTML = groups.map(g => {
@@ -379,6 +398,11 @@ function qRender(){
       ${esc(g.co.tab || g.co.name)} <b>${g.rows.length}</b></span>`;
   }).join('') + (total ? `<span style="margin-left:auto;color:var(--tx3)">총 ${total}건</span>` : '');
 
+  if (!total && qCat && all.some(g => g.rows.length)){
+    $('#qres').innerHTML = `<div class="qempty"><b>${esc(qCat)}</b> 과목에서는 <b>"${esc(qq.value.trim())}"</b>이(가) 없습니다.<br>
+      다른 과목에서는 나왔습니다 — 위에서 <b>전체 과목</b>을 눌러 보세요.</div>`;
+    return;
+  }
   if (!total){
     $('#qres').innerHTML = `<div class="qempty">복원 어디에도 <b>"${esc(qq.value.trim())}"</b>이(가) 없습니다.<br>
       기억에 의존한 자료라 <b>출제되지 않는다는 뜻은 아닙니다.</b></div>`;
@@ -419,6 +443,10 @@ qfab.addEventListener('click', () => qOpen());
 $('#qclose').addEventListener('click', qClose);
 qpanel.addEventListener('mousedown', e => { if (e.target === qpanel) qClose(); });
 qq.addEventListener('input', qRender);
+$('#qcats').addEventListener('click', e => {
+  const b = e.target.closest('[data-qc]'); if (!b) return;
+  qCat = b.dataset.qc; qRender(); qq.focus();
+});
 $('#qres').addEventListener('click', e => {
   const b = e.target.closest('[data-seed]'); if (!b) return;
   qq.value = b.dataset.seed; qRender(); qq.focus();
